@@ -4,6 +4,17 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>MasLazu.AspNet.EmailSender.Gmail</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>MasLazu</Authors>
+    <Company>MasLazu</Company>
+    <Description>Gmail provider implementation for MasLazu.AspNet.EmailSender with service account authentication and Razor templates.</Description>
+    <PackageTags>aspnetcore;email;gmail;googleapis;razor;templates</PackageTags>
+    <RepositoryUrl>https://github.com/MasLazu/MasLazu.AspNet.EmailSender</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +34,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Views\**\*.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 
 </Project>

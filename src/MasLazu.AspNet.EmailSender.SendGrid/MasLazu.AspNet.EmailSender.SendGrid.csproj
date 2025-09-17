@@ -4,6 +4,17 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>MasLazu.AspNet.EmailSender.SendGrid</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>MasLazu</Authors>
+    <Company>MasLazu</Company>
+    <Description>SendGrid provider implementation for MasLazu.AspNet.EmailSender with API key authentication, tracking, and Razor templates.</Description>
+    <PackageTags>aspnetcore;email;sendgrid;api;razor;templates;tracking</PackageTags>
+    <RepositoryUrl>https://github.com/MasLazu/MasLazu.AspNet.EmailSender</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +34,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Views\**\*.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 
 </Project>

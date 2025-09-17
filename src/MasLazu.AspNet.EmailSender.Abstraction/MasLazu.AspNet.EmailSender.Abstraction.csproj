@@ -4,6 +4,21 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>MasLazu.AspNet.EmailSender.Abstraction</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>MasLazu</Authors>
+    <Company>MasLazu</Company>
+    <Description>Abstraction layer for multi-provider email sending in ASP.NET Core applications.</Description>
+    <PackageTags>aspnetcore;email;smtp;abstraction;interface</PackageTags>
+    <RepositoryUrl>https://github.com/MasLazu/MasLazu.AspNet.EmailSender</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
 
 </Project>
