@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F6424400-8244-43E7-90E8-C9EB108BEA43}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasLazu.AspNet.EmailSender.Abstraction", "src\MasLazu.AspNet.EmailSender.Abstraction\MasLazu.AspNet.EmailSender.Abstraction.csproj", "{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasLazu.AspNet.EmailSender.Gmail", "src\MasLazu.AspNet.EmailSender.Gmail\MasLazu.AspNet.EmailSender.Gmail.csproj", "{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasLazu.AspNet.EmailSender.SendGrid", "src\MasLazu.AspNet.EmailSender.SendGrid\MasLazu.AspNet.EmailSender.SendGrid.csproj", "{5AFC9C7F-0485-41A3-813A-33C701B2A75E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AFC9C7F-0485-41A3-813A-33C701B2A75E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AFC9C7F-0485-41A3-813A-33C701B2A75E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AFC9C7F-0485-41A3-813A-33C701B2A75E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AFC9C7F-0485-41A3-813A-33C701B2A75E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{86F0B75C-DCBE-4C0C-9B1E-3F4E38C38299} = {F6424400-8244-43E7-90E8-C9EB108BEA43}
+		{FA0B0224-94C9-4B51-B462-AD5BBD85BD3F} = {F6424400-8244-43E7-90E8-C9EB108BEA43}
+		{5AFC9C7F-0485-41A3-813A-33C701B2A75E} = {F6424400-8244-43E7-90E8-C9EB108BEA43}
+	EndGlobalSection
+EndGlobal

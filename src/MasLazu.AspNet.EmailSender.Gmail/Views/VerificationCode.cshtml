@@ -1,0 +1,429 @@
+@model MasLazu.AspNet.EmailSender.Abstraction.Models.EmailMessage
+@{
+    var options = Model.RenderOptions ?? new MasLazu.AspNet.EmailSender.Abstraction.Models.EmailRenderOptions();
+
+    // Extract verification code from parameters or model
+    string verificationCode = "";
+    if (Model.Parameters?.ContainsKey("VerificationCode") == true)
+    {
+        verificationCode = Model.Parameters["VerificationCode"];
+    }
+    else if (Model.Parameters?.ContainsKey("Code") == true)
+    {
+        verificationCode = Model.Parameters["Code"];
+    }
+    else if (Model.Model != null)
+    {
+        var codeProperty = Model.Model.GetType().GetProperty("VerificationCode") ??
+        Model.Model.GetType().GetProperty("Code");
+        if (codeProperty != null)
+        {
+            verificationCode = codeProperty.GetValue(Model.Model)?.ToString() ?? "";
+        }
+    }
+
+    // Extract expiry time if available
+    string expiryTime = "";
+    if (Model.Parameters?.ContainsKey("ExpiryMinutes") == true)
+    {
+        expiryTime = Model.Parameters["ExpiryMinutes"] + " minutes";
+    }
+    else if (Model.Parameters?.ContainsKey("ExpiryTime") == true)
+    {
+        expiryTime = Model.Parameters["ExpiryTime"];
+    }
+    else
+    {
+        expiryTime = "15 minutes"; // Default
+    }
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.Subject</title>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .email-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.15"/><circle cx="20" cy="80" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+
+        .email-header .shield-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-content {
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .verification-section {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 40px 30px;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .verification-section::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            border-radius: 16px;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .verification-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .verification-code {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1e40af;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
+            user-select: all;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .copy-button {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 14px;
+        }
+
+        .copy-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .expiry-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .expiry-notice .warning-icon {
+            width: 20px;
+            height: 20px;
+            background: #f59e0b;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .expiry-notice .warning-icon::before {
+            content: '!';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .email-content p {
+            font-size: 16px;
+            color: #475569;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .security-tips {
+            background: #f1f5f9;
+            border-left: 4px solid #3b82f6;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+        }
+
+        .security-tips h3 {
+            color: #1e293b;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+        }
+
+        .security-tips ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #475569;
+        }
+
+        .security-tips li {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .email-footer {
+            background: #f8fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .company-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @@media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .email-header,
+            .email-content,
+            .email-footer {
+                padding: 30px 20px;
+            }
+
+            .verification-code {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+
+            .verification-section {
+                padding: 30px 20px;
+                margin: 20px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <div class="shield-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2L3 7V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V7L12 2ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"
+                        fill="white" />
+                </svg>
+            </div>
+            <h1>@Model.Subject</h1>
+            <p>@(options.CompanyName ?? "Your Account")</p>
+        </div>
+
+        <div class="email-content">
+            @if (!string.IsNullOrEmpty(Model.Body))
+            {
+                <p>@Html.Raw(Model.Body)</p>
+            }
+            else
+            {
+                <p>We received a request to verify your account. Please use the verification code below to complete the
+                    process.</p>
+            }
+
+            @if (!string.IsNullOrEmpty(verificationCode))
+            {
+                <div class="verification-section">
+                    <div class="verification-label">Your Verification Code</div>
+                    <div class="verification-code" id="verificationCode">@verificationCode</div>
+                    <button class="copy-button" onclick="copyCode()">📋 Copy Code</button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(expiryTime))
+            {
+                <div class="expiry-notice">
+                    <div class="warning-icon"></div>
+                    <div>
+                        <strong>Important:</strong> This verification code will expire in <strong>@expiryTime</strong>.
+                        Please use it as soon as possible.
+                    </div>
+                </div>
+            }
+
+            <div class="security-tips">
+                <h3>🔒 Security Reminder</h3>
+                <ul>
+                    <li>Never share this code with anyone</li>
+                    <li>We will never ask for this code via phone or email</li>
+                    <li>If you didn't request this code, please ignore this email</li>
+                    <li>For questions, contact our support team</li>
+                </ul>
+            </div>
+
+            @if (Model.Parameters?.Any() == true)
+            {
+                var otherParams = Model.Parameters.Where(p =>
+                p.Key != "VerificationCode" &&
+                p.Key != "Code" &&
+                p.Key != "ExpiryMinutes" &&
+                p.Key != "ExpiryTime").ToList();
+
+                if (otherParams.Any())
+                {
+                    <div class="parameters-section">
+                        <h3>Additional Information</h3>
+                        @foreach (var parameter in otherParams)
+                        {
+                            <p><strong>@parameter.Key:</strong> @parameter.Value</p>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="email-footer">
+            <p class="footer-text">
+                This is an automated security email from @(options.CompanyName ?? "our system").<br>
+                Please do not reply to this email.
+            </p>
+            <div class="company-info">
+                <p class="footer-text">
+                    © @DateTime.Now.Year @(options.CompanyName ?? "Your Company"). All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const codeElement = document.getElementById('verificationCode');
+            const code = codeElement.textContent;
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(function () {
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = '✅ Copied!';
+                    button.style.background = '#10b981';
+                    setTimeout(function () {
+                        button.textContent = originalText;
+                        button.style.background = '#3b82f6';
+                    }, 2000);
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.background = '#10b981';
+                setTimeout(function () {
+                    button.textContent = originalText;
+                    button.style.background = '#3b82f6';
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+
+</html>

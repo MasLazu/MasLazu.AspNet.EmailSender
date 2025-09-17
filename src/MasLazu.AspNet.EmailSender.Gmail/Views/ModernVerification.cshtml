@@ -1,0 +1,453 @@
+@model MasLazu.AspNet.EmailSender.Abstraction.Models.EmailMessage
+@{
+    var options = Model.RenderOptions ?? new MasLazu.AspNet.EmailSender.Abstraction.Models.EmailRenderOptions();
+
+    // Extract verification code from parameters or model
+    string verificationCode = "";
+    if (Model.Parameters?.ContainsKey("VerificationCode") == true)
+    {
+        verificationCode = Model.Parameters["VerificationCode"];
+    }
+    else if (Model.Parameters?.ContainsKey("Code") == true)
+    {
+        verificationCode = Model.Parameters["Code"];
+    }
+    else if (Model.Model != null)
+    {
+        var codeProperty = Model.Model.GetType().GetProperty("VerificationCode") ??
+        Model.Model.GetType().GetProperty("Code");
+        if (codeProperty != null)
+        {
+            verificationCode = codeProperty.GetValue(Model.Model)?.ToString() ?? "";
+        }
+    }
+
+    // Extract user name if available
+    string userName = "";
+    if (Model.Parameters?.ContainsKey("UserName") == true)
+    {
+        userName = Model.Parameters["UserName"];
+    }
+    else if (Model.Parameters?.ContainsKey("Name") == true)
+    {
+        userName = Model.Parameters["Name"];
+    }
+    else if (Model.Model != null)
+    {
+        var nameProperty = Model.Model.GetType().GetProperty("UserName") ??
+        Model.Model.GetType().GetProperty("Name");
+        if (nameProperty != null)
+        {
+            userName = nameProperty.GetValue(Model.Model)?.ToString() ?? "";
+        }
+    }
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.Subject</title>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .email-container {
+            max-width: 500px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #1e1e1e, #2d2d2d);
+            padding: 50px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .email-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
+        }
+
+        .lock-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .email-header p {
+            margin: 15px 0 0 0;
+            font-size: 16px;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-content {
+            padding: 60px 40px;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        .greeting {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+        }
+
+        .verification-section {
+            background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+            border: 1px solid #e0e7ff;
+            border-radius: 20px;
+            padding: 40px 30px;
+            margin: 40px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verification-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .verification-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .verification-code-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0;
+        }
+
+        .code-digit {
+            width: 50px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @@keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .code-digit:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .code-digit:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .code-digit:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .code-digit:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .code-digit:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .code-digit:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .description {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 30px 0;
+            line-height: 1.7;
+        }
+
+        .timer-section {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timer-icon {
+            width: 40px;
+            height: 40px;
+            background: #f59e0b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .timer-text {
+            color: #92400e;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(135deg, transparent, #e5e7eb, transparent);
+            margin: 40px 0;
+        }
+
+        .email-footer {
+            background: #f9fafb;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .company-logo {
+            margin-bottom: 20px;
+        }
+
+        @@media (max-width: 600px) {
+            .email-container {
+                margin: 20px;
+                max-width: calc(100% - 40px);
+            }
+
+            .email-header,
+            .email-content,
+            .email-footer {
+                padding: 40px 30px;
+            }
+
+            .verification-code-container {
+                gap: 4px;
+            }
+
+            .code-digit {
+                width: 40px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .email-header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <div class="lock-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M18 8H17V6C17 3.24 14.76 1 12 1S7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM9 6C9 4.34 10.34 3 12 3S15 4.34 15 6V8H9V6ZM18 20H6V10H18V20ZM12 17C13.1 17 14 16.1 14 15S13.1 13 12 13S10 13.9 10 15S10.9 17 12 17Z"
+                        fill="white" />
+                </svg>
+            </div>
+            <h1>Secure Verification</h1>
+            <p>@(options.CompanyName ?? "Your trusted platform")</p>
+        </div>
+
+        <div class="email-content">
+            @if (!string.IsNullOrEmpty(userName))
+            {
+                <div class="greeting">Hello @userName! 👋</div>
+            }
+
+            <p class="description">
+                @if (!string.IsNullOrEmpty(Model.Body))
+                {
+                    @Html.Raw(Model.Body)
+                }
+                else
+                {
+                    @:We've sent you this verification code to secure your account. Enter the code below to continue.
+                }
+            </p>
+
+            @if (!string.IsNullOrEmpty(verificationCode))
+            {
+                <div class="verification-section">
+                    <div class="verification-label">Your Verification Code</div>
+                    <div class="verification-code-container">
+                        @for (int i = 0; i < verificationCode.Length; i++)
+                        {
+                            <div class="code-digit">@verificationCode[i]</div>
+                        }
+                    </div>
+                    <button class="action-button" onclick="copyToClipboard('@verificationCode')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"
+                                fill="currentColor" />
+                        </svg>
+                        Copy Code
+                    </button>
+                </div>
+            }
+
+            <div class="timer-section">
+                <div class="timer-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M15 1H9V3H15V1ZM11 14H13V8H11V14ZM19.03 7.39L20.45 5.97C20.02 5.46 19.55 4.98 19.04 4.56L17.62 5.98C16.07 4.74 14.12 4 12 4C7.03 4 3 8.03 3 13S7.03 22 12 22S21 17.97 21 13C21 10.88 20.26 8.93 19.03 7.39ZM12 20C8.13 20 5 16.87 5 13S8.13 6 12 6S19 9.13 19 13S15.87 20 12 20Z"
+                            fill="white" />
+                    </svg>
+                </div>
+                <div class="timer-text">
+                    <strong>Time sensitive:</strong> This code expires in 15 minutes for your security.
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <p class="description" style="font-size: 14px; color: #9ca3af;">
+                🔒 <strong>Security note:</strong> Never share this code with anyone. Our team will never ask for your
+                verification code.
+            </p>
+        </div>
+
+        <div class="email-footer">
+            @if (!string.IsNullOrEmpty(options.LogoUrl))
+            {
+                <div class="company-logo">
+                    <img src="@options.LogoUrl" alt="@options.CompanyName" style="max-height: 40px;">
+                </div>
+            }
+
+            <p class="footer-text">
+                This verification email was sent automatically from @(options.CompanyName ?? "our secure system").<br>
+                If you didn't request this, please ignore this email.
+            </p>
+
+            <p class="footer-text" style="margin-top: 20px; opacity: 0.7;">
+                © @DateTime.Now.Year @(options.CompanyName ?? "Your Company"). All rights reserved.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function () {
+                    const button = event.target.closest('.action-button');
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                        </svg>
+                        Copied!
+                    `;
+                    button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+                    setTimeout(function () {
+                        button.innerHTML = originalHTML;
+                        button.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                    }, 2000);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
